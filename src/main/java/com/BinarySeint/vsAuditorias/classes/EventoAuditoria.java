@@ -31,7 +31,7 @@ public class EventoAuditoria {
 
     public EventoAuditoria() {}
 
-    public void EventoAuditoria(Long id,String usuarioId,String accion,LocalDateTime fecha,String ip,String entidadId,String detalles){
+    public EventoAuditoria(Long id,String usuarioId,String accion,LocalDateTime fecha,String ip,String entidadId,String detalles){
         this.id=id;
         this.usuarioId=usuarioId;
         this.accion=accion;
