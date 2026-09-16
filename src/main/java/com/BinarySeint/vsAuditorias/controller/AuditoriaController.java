@@ -1,5 +1,6 @@
 package com.BinarySeint.vsAuditorias.controller;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,6 +17,13 @@ public class AuditoriaController {
 
     public AuditoriaController(AuditoriaRepository auditoriaRepository) {
         this.auditoriaRepository = auditoriaRepository;
+    }
+
+    @PostMapping("/event")
+    public ResponseEntity<EventoAuditoria> registrarEventoAuditoria(@RequestBody EventoAuditoria evento) {
+        System.out.println("Registrando evento de auditoría vía REST: " + evento.getAccion());
+        EventoAuditoria guardado = auditoriaRepository.save(evento);
+        return ResponseEntity.status(HttpStatus.CREATED).body(guardado);
     }
 
     @GetMapping
