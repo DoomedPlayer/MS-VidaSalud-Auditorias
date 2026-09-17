@@ -81,4 +81,11 @@ public class EventoAuditoria {
         this.detalles=detalles;
     }
 
+    @PrePersist
+    protected void onCreate() {
+        if (this.fechaHora == null) {
+            this.fechaHora = LocalDateTime.now();
+        }
+    }
+
 }
