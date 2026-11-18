@@ -10,6 +10,8 @@ import java.util.List;
 
 @Repository
 public interface AuditoriaRepository extends JpaRepository<EventoAuditoria, Long> {
+    boolean existsByEventId(String eventId);
+    List<EventoAuditoria> findByAppointmentIdOrderByFechaHoraAsc(String appointmentId);
     List<EventoAuditoria> findByUsuarioId(String usuarioId);
     List<EventoAuditoria> findByAccion(String accion);
     List<EventoAuditoria> findByFechaHoraBetween(LocalDateTime inicio, LocalDateTime fin);

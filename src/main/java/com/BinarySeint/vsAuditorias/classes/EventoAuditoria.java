@@ -11,75 +11,67 @@ public class EventoAuditoria {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "event_id", unique = true)
+    private String eventId;
+
+    @Column(name = "appointment_id")
+    private String appointmentId;
+
     @Column(name = "usuario_id", nullable = false)
-    private String usuarioId; 
+    private String usuarioId;
 
     @Column(nullable = false)
-    private String accion; 
+    private String accion;
 
     @Column(name = "fecha_hora", nullable = false)
-    private LocalDateTime fechaHora; 
+    private LocalDateTime fechaHora;
 
     @Column(name = "origen_ip")
-    private String origenIp; 
+    private String origenIp;
 
     @Column(name = "entidad_id")
-    private String entidadId; 
-    
+    private String entidadId;
+
     @Column(columnDefinition = "TEXT")
-    private String detalles; 
+    private String detalles;
 
     public EventoAuditoria() {}
 
-    public EventoAuditoria(Long id,String usuarioId,String accion,LocalDateTime fecha,String ip,String entidadId,String detalles){
-        this.id=id;
-        this.usuarioId=usuarioId;
-        this.accion=accion;
-        this.fechaHora=fecha;
-        this.origenIp=ip;
-        this.entidadId=entidadId;
-        this.detalles=detalles;
+    public EventoAuditoria(Long id, String usuarioId, String accion, LocalDateTime fecha, String ip, String entidadId, String detalles) {
+        this.id = id;
+        this.usuarioId = usuarioId;
+        this.accion = accion;
+        this.fechaHora = fecha;
+        this.origenIp = ip;
+        this.entidadId = entidadId;
+        this.detalles = detalles;
     }
 
-    public Long getId(){
-        return id;
-    }
-    public String getUsuarioId(){
-        return usuarioId;
-    }
-    public void setUsuarioId(String usuario){
-        this.usuarioId=usuario;
-    }
-    public String getAccion(){
-        return accion;
-    }
-    public void setAccion(String accion){
-        this.accion=accion;
-    }
-    public LocalDateTime getFechaHora(){
-        return fechaHora;
-    }
-    public void setFechaHora(LocalDateTime fecha){
-        this.fechaHora=fecha;
-    }
-    public String getOrigenIp(){
-        return origenIp;
-    }
-    public void setOrigenIp(String ip){
-        this.origenIp=ip;
-    }
-    public String getEntidadId(){
-        return entidadId;
-    }
-    public void setEntidadId(String entidad){
-        this.entidadId=entidad;
-    }
-    public String getDetalles(){
-        return detalles;
-    }
-    public void setDetalles(String detalles){
-        this.detalles=detalles;
-    }
+    public Long getId() { return id; }
+
+    public String getEventId() { return eventId; }
+    public void setEventId(String eventId) { this.eventId = eventId; }
+
+    public String getAppointmentId() { return appointmentId; }
+    public void setAppointmentId(String appointmentId) { this.appointmentId = appointmentId; }
+
+    public String getUsuarioId() { return usuarioId; }
+    public void setUsuarioId(String usuario) { this.usuarioId = usuario; }
+
+    public String getAccion() { return accion; }
+    public void setAccion(String accion) { this.accion = accion; }
+
+    public LocalDateTime getFechaHora() { return fechaHora; }
+    public void setFechaHora(LocalDateTime fecha) { this.fechaHora = fecha; }
+
+    public String getOrigenIp() { return origenIp; }
+    public void setOrigenIp(String ip) { this.origenIp = ip; }
+
+    public String getEntidadId() { return entidadId; }
+    public void setEntidadId(String entidadId) { this.entidadId = entidadId; }
+
+    public String getDetalles() { return detalles; }
+    public void setDetalles(String detalles) { this.detalles = detalles; }
 
     @PrePersist
     protected void onCreate() {
@@ -87,5 +79,4 @@ public class EventoAuditoria {
             this.fechaHora = LocalDateTime.now();
         }
     }
-
 }
