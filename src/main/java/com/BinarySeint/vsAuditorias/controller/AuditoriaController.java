@@ -4,6 +4,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.BinarySeint.vsAuditorias.classes.EventoAuditoria;
 import com.BinarySeint.vsAuditorias.dto.AuditTimelineEventDTO;
@@ -21,14 +22,17 @@ public class AuditoriaController {
     private static final String AUDIT_TOPIC = "audit.timeline";
 
     private final AuditoriaRepository auditoriaRepository;
-    private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final ObjectMapper objectMapper;
 
     public AuditoriaController(AuditoriaRepository auditoriaRepository,
-                               KafkaTemplate<String, Object> kafkaTemplate) {
+                               KafkaTemplate<String, String> kafkaTemplate,
+                               ObjectMapper objectMapper) {
         this.auditoriaRepository = auditoriaRepository;
         this.kafkaTemplate = kafkaTemplate;
+        this.objectMapper = objectMapper;
     }
-
+    
     @GetMapping
     public ResponseEntity<List<EventoAuditoria>> obtenerTodos() {
         return ResponseEntity.ok(auditoriaRepository.findAll());
@@ -57,7 +61,7 @@ public class AuditoriaController {
     }
 
     @PostMapping("/event")
-    public ResponseEntity<Void> registrarEventoDesdeFrontend(@RequestBody Map<String, Object> body) {
+    public ResponseEntity<Void> registrarEventoDesdeFrontend(@RequestBody Map<String, Object> body) throws Exception {
         String eventId = UUID.randomUUID().toString();
 
         AuditTimelineEventDTO evento = new AuditTimelineEventDTO();
@@ -70,7 +74,10 @@ public class AuditoriaController {
         evento.setEntidadId("Auth MSAL");
         evento.setDetalles(String.valueOf(body.getOrDefault("detalles", "Inicio de sesión registrado")));
 
-        kafkaTemplate.send(AUDIT_TOPIC, eventId, evento);
+        String payloadJson = objectMapper.writeValueAsString(evento);
+
+        // Key = eventId (UUID) para que la compactación de audit.timeline no sobreescriba logins previos
+        kafkaTemplate.send(AUDIT_TOPIC, eventId, payloadJson);
 
         return ResponseEntity.accepted().build();
     }
