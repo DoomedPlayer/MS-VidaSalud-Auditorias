@@ -4,11 +4,12 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.*;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.BinarySeint.vsAuditorias.classes.EventoAuditoria;
 import com.BinarySeint.vsAuditorias.dto.AuditTimelineEventDTO;
 import com.BinarySeint.vsAuditorias.repository.AuditoriaRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,16 +24,16 @@ public class AuditoriaController {
 
     private final AuditoriaRepository auditoriaRepository;
     private final KafkaTemplate<String, String> kafkaTemplate;
-    private final ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper = new ObjectMapper()
+            .findAndRegisterModules()
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
     public AuditoriaController(AuditoriaRepository auditoriaRepository,
-                               KafkaTemplate<String, String> kafkaTemplate,
-                               ObjectMapper objectMapper) {
+                               KafkaTemplate<String, String> kafkaTemplate) {
         this.auditoriaRepository = auditoriaRepository;
         this.kafkaTemplate = kafkaTemplate;
-        this.objectMapper = objectMapper;
     }
-    
+
     @GetMapping
     public ResponseEntity<List<EventoAuditoria>> obtenerTodos() {
         return ResponseEntity.ok(auditoriaRepository.findAll());
@@ -76,7 +77,6 @@ public class AuditoriaController {
 
         String payloadJson = objectMapper.writeValueAsString(evento);
 
-        // Key = eventId (UUID) para que la compactación de audit.timeline no sobreescriba logins previos
         kafkaTemplate.send(AUDIT_TOPIC, eventId, payloadJson);
 
         return ResponseEntity.accepted().build();
