@@ -2,22 +2,31 @@ package com.BinarySeint.vsAuditorias.controller;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import com.BinarySeint.vsAuditorias.classes.EventoAuditoria;
+import com.BinarySeint.vsAuditorias.dto.AuditTimelineEventDTO;
 import com.BinarySeint.vsAuditorias.repository.AuditoriaRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/audit")
 public class AuditoriaController {
 
-    private final AuditoriaRepository auditoriaRepository;
+    private static final String AUDIT_TOPIC = "audit.timeline";
 
-    public AuditoriaController(AuditoriaRepository auditoriaRepository) {
+    private final AuditoriaRepository auditoriaRepository;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
+
+    public AuditoriaController(AuditoriaRepository auditoriaRepository,
+                               KafkaTemplate<String, Object> kafkaTemplate) {
         this.auditoriaRepository = auditoriaRepository;
+        this.kafkaTemplate = kafkaTemplate;
     }
 
     @GetMapping
@@ -45,5 +54,24 @@ public class AuditoriaController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime inicio,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fin) {
         return ResponseEntity.ok(auditoriaRepository.findByFechaHoraBetween(inicio, fin));
+    }
+
+    @PostMapping("/event")
+    public ResponseEntity<Void> registrarEventoDesdeFrontend(@RequestBody Map<String, Object> body) {
+        String eventId = UUID.randomUUID().toString();
+
+        AuditTimelineEventDTO evento = new AuditTimelineEventDTO();
+        evento.setEventId(eventId);
+        evento.setAppointmentId(String.valueOf(body.getOrDefault("entidadId", "AUTH")));
+        evento.setUsuarioId(String.valueOf(body.getOrDefault("usuarioId", "anonimo")));
+        evento.setAccion(String.valueOf(body.getOrDefault("accion", "LOGIN_SUCCESS")));
+        evento.setFechaHora(LocalDateTime.now());
+        evento.setOrigenIp(String.valueOf(body.getOrDefault("origenIp", "Frontend React")));
+        evento.setEntidadId("Auth MSAL");
+        evento.setDetalles(String.valueOf(body.getOrDefault("detalles", "Inicio de sesión registrado")));
+
+        kafkaTemplate.send(AUDIT_TOPIC, eventId, evento);
+
+        return ResponseEntity.accepted().build();
     }
 }
